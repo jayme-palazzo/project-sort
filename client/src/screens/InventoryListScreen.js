@@ -20,7 +20,8 @@ import {
   Fab,
   Zoom,
   Paper,
-  styled
+  styled,
+  IconButton
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -175,7 +176,7 @@ function InventoryListScreen() {
             </Typography>
           </EmptyState>
         ) : (
-          <Grid container spacing={3} sx={{ flexGrow: 1 }}>
+          <Grid container spacing={3}>
             {inventory.map((item) => (
               <Grid item xs={12} sm={6} md={3} key={item._id}>
                 <Card 
@@ -190,17 +191,25 @@ function InventoryListScreen() {
                     },
                     backgroundColor: 'white',
                     borderRadius: '16px',
+                    cursor: 'pointer',
                   }}
+                  onClick={() => navigate(`/edit-item/${item._id}`)}
                 >
                   <CategoryIcon 
                     category={item.category.name}
                     isCustom={!item.category.isDefault}
                   />
-                  <CardContent sx={{ flexGrow: 1, pt: 0 }}>
-                    <Typography variant="h6" gutterBottom sx={{ 
+                  <CardContent sx={{ 
+                    flexGrow: 1, 
+                    pt: 0,
+                    pb: 1,
+                    px: 2,
+                    '&:last-child': { pb: 1 }
+                  }}>
+                    <Typography variant="h6" sx={{ 
                       fontSize: '1.1rem',
                       fontWeight: 500,
-                      mb: 2 
+                      mb: 1
                     }}>
                       {item.name}
                     </Typography>
@@ -211,17 +220,17 @@ function InventoryListScreen() {
                       color: 'text.secondary',
                       fontSize: '0.875rem'
                     }}>
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
                         Quantity: {item.quantity}
                       </Typography>
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
                         Price: ${item.price}
                       </Typography>
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
                         Category: {item.category.name}
                       </Typography>
                       {item.location && (
-                        <Typography variant="body2">
+                        <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
                           Location: {item.location}
                         </Typography>
                       )}
@@ -229,25 +238,19 @@ function InventoryListScreen() {
                   </CardContent>
                   <CardActions sx={{ 
                     justifyContent: 'flex-end', 
-                    p: 2,
+                    p: 1,
+                    pt: 0,
                     borderTop: '1px solid',
-                    borderColor: 'divider'
+                    borderColor: 'divider',
+                    minHeight: '36px'
                   }}>
-                    <Button
+                    <IconButton
                       size="small"
-                      startIcon={<EditIcon />}
-                      onClick={() => navigate(`/edit-item/${item._id}`)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      size="small"
-                      startIcon={<DeleteIcon />}
                       onClick={() => handleDelete(item._id)}
-                      color="error"
+                      sx={{ color: 'text.secondary' }}
                     >
-                      Delete
-                    </Button>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
                   </CardActions>
                 </Card>
               </Grid>

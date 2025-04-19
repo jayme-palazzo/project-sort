@@ -1,3 +1,7 @@
+# Prism
+
+Modern Inventory Solution
+
 # Inventory Management Web Application
 
 A React web application with Node.js backend for managing inventory items.

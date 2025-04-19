@@ -21,18 +21,25 @@ const inventorySchema = new mongoose.Schema({
     min: 0
   },
   category: {
-    type: String,
-    required: true,
-    trim: true
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
+    required: true
   },
   location: {
     type: String,
     trim: true
   },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
   lastUpdated: {
     type: Date,
     default: Date.now
   }
+}, {
+  timestamps: true
 });
 
 module.exports = mongoose.model('Inventory', inventorySchema); 
