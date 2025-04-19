@@ -2,28 +2,112 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Button,
-  CircularProgress,
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
   Typography,
-  Box,
+  Button,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
   DialogActions,
   Snackbar,
-  Alert
+  Alert,
+  Box,
+  CircularProgress,
+  Fab,
+  Zoom,
+  Paper,
+  styled
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import axios from 'axios';
+import AddIcon from '@mui/icons-material/Add';
+import CategoryIcon from '../components/CategoryIcon';
+import InventoryService from '../services/InventoryService';
+
+const AnimatedFab = styled(Fab)(({ theme }) => ({
+  position: 'fixed',
+  bottom: theme.spacing(4),
+  right: theme.spacing(4),
+  transition: 'width 0.3s ease-in-out',
+  minWidth: '56px',
+  width: '56px',
+  height: '56px',
+  borderRadius: '28px',
+  backgroundColor: theme.palette.primary.main,
+  textTransform: 'none',
+  '&:hover': {
+    backgroundColor: theme.palette.primary.main,
+  },
+  '& .MuiSvgIcon-root': {
+    transition: 'transform 0.3s ease-in-out',
+    marginRight: 0,
+    width: '24px',
+    height: '24px',
+  },
+  '& .button-text': {
+    width: 0,
+    opacity: 0,
+    transition: 'opacity 0.2s ease-in-out, width 0s 0.2s',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    display: 'inline-block',
+    fontSize: '0.875rem',
+    fontWeight: 500,
+    visibility: 'hidden',
+    textTransform: 'none',
+  },
+  '&:hover': {
+    width: 'auto',
+    paddingRight: theme.spacing(4),
+    paddingLeft: theme.spacing(3),
+    backgroundColor: theme.palette.primary.main,
+    '& .MuiSvgIcon-root': {
+      transform: 'rotate(90deg)',
+      marginRight: theme.spacing(1),
+    },
+    '& .button-text': {
+      width: 'auto',
+      opacity: 1,
+      visibility: 'visible',
+      marginLeft: theme.spacing(0.5),
+      transition: 'opacity 0.2s ease-in-out, width 0s',
+    },
+  },
+  '&:active': {
+    backgroundColor: theme.palette.primary.main,
+    boxShadow: theme.shadows[6],
+  },
+}));
+
+const InventoryContainer = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  borderRadius: theme.spacing(2),
+  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+  backdropFilter: 'blur(10px)',
+  boxShadow: 'rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px',
+  minHeight: '70vh',
+  display: 'flex',
+  flexDirection: 'column',
+}));
+
+const EmptyState = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: '100%',
+  minHeight: '400px',
+  color: theme.palette.text.secondary,
+  '& svg': {
+    fontSize: '64px',
+    marginBottom: theme.spacing(2),
+    opacity: 0.5,
+  },
+}));
 
 function InventoryListScreen() {
   const [inventory, setInventory] = useState([]);
@@ -39,11 +123,10 @@ function InventoryListScreen() {
 
   const fetchInventory = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/inventory');
-      setInventory(response.data);
+      const data = await InventoryService.getAllItems();
+      setInventory(data);
     } catch (error) {
-      console.error('Error fetching inventory:', error);
-      setError('Failed to fetch items');
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -56,13 +139,12 @@ function InventoryListScreen() {
 
   const confirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:5000/api/inventory/${itemToDelete}`);
-      setInventory(inventory.filter(item => item._id !== itemToDelete));
+      await InventoryService.deleteItem(itemToDelete);
+      setInventory(prev => prev.filter(item => item._id !== itemToDelete));
       setDeleteDialogOpen(false);
       setItemToDelete(null);
     } catch (error) {
-      console.error('Error deleting item:', error);
-      setError(error.response?.data?.message || 'Failed to delete item');
+      setError(error.message);
     }
   };
 
@@ -75,63 +157,124 @@ function InventoryListScreen() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Paper elevation={3} sx={{ p: 3 }}>
-        <Typography variant="h5" component="h2" gutterBottom>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h5" component="h2">
           Inventory Items
         </Typography>
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Quantity</TableCell>
-                <TableCell>Price</TableCell>
-                <TableCell>Category</TableCell>
-                <TableCell>Location</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={5}>Loading...</TableCell>
-                </TableRow>
-              ) : inventory.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5}>No items found</TableCell>
-                </TableRow>
-              ) : (
-                inventory.map((item) => (
-                  <TableRow key={item._id}>
-                    <TableCell>{item.name}</TableCell>
-                    <TableCell>{item.quantity}</TableCell>
-                    <TableCell>${item.price}</TableCell>
-                    <TableCell>{item.category}</TableCell>
-                    <TableCell>{item.location}</TableCell>
-                    <TableCell>
-                      <Button
-                        startIcon={<EditIcon />}
-                        onClick={() => navigate(`/edit-item/${item._id}`)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        startIcon={<DeleteIcon />}
-                        onClick={() => handleDelete(item._id)}
-                      >
-                        Delete
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+      </Box>
 
-      {/* Delete Confirmation Dialog */}
+      <InventoryContainer elevation={0}>
+        {inventory.length === 0 ? (
+          <EmptyState>
+            <Typography variant="h6" color="textSecondary" sx={{ opacity: 0.7 }}>
+              Inventory is empty
+            </Typography>
+            <Typography variant="body2" color="textSecondary" sx={{ opacity: 0.5 }}>
+              Click the + button to add your first item
+            </Typography>
+          </EmptyState>
+        ) : (
+          <Grid container spacing={3} sx={{ flexGrow: 1 }}>
+            {inventory.map((item) => (
+              <Grid item xs={12} sm={6} md={3} key={item._id}>
+                <Card 
+                  sx={{ 
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: theme => theme.shadows[4],
+                    },
+                    backgroundColor: 'white',
+                    borderRadius: '16px',
+                  }}
+                >
+                  <CategoryIcon 
+                    category={item.category.name}
+                    isCustom={!item.category.isDefault}
+                  />
+                  <CardContent sx={{ flexGrow: 1, pt: 0 }}>
+                    <Typography variant="h6" gutterBottom sx={{ 
+                      fontSize: '1.1rem',
+                      fontWeight: 500,
+                      mb: 2 
+                    }}>
+                      {item.name}
+                    </Typography>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      flexDirection: 'column',
+                      gap: 0.5,
+                      color: 'text.secondary',
+                      fontSize: '0.875rem'
+                    }}>
+                      <Typography variant="body2">
+                        Quantity: {item.quantity}
+                      </Typography>
+                      <Typography variant="body2">
+                        Price: ${item.price}
+                      </Typography>
+                      <Typography variant="body2">
+                        Category: {item.category.name}
+                      </Typography>
+                      {item.location && (
+                        <Typography variant="body2">
+                          Location: {item.location}
+                        </Typography>
+                      )}
+                    </Box>
+                  </CardContent>
+                  <CardActions sx={{ 
+                    justifyContent: 'flex-end', 
+                    p: 2,
+                    borderTop: '1px solid',
+                    borderColor: 'divider'
+                  }}>
+                    <Button
+                      size="small"
+                      startIcon={<EditIcon />}
+                      onClick={() => navigate(`/edit-item/${item._id}`)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      size="small"
+                      startIcon={<DeleteIcon />}
+                      onClick={() => handleDelete(item._id)}
+                      color="error"
+                    >
+                      Delete
+                    </Button>
+                  </CardActions>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+      </InventoryContainer>
+
+      <Zoom in={true}>
+        <AnimatedFab
+          color="primary"
+          onClick={() => navigate('/add-item')}
+          aria-label="add new item"
+          size="large"
+        >
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%'
+          }}>
+            <AddIcon />
+            <span className="button-text">Add new item</span>
+          </Box>
+        </AnimatedFab>
+      </Zoom>
+
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
@@ -150,7 +293,6 @@ function InventoryListScreen() {
         </DialogActions>
       </Dialog>
 
-      {/* Error Snackbar */}
       <Snackbar 
         open={!!error} 
         autoHideDuration={6000} 
