@@ -11,10 +11,10 @@ function HomeScreen() {
     <Container maxWidth="md" sx={{ mt: 4 }}>
       <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Inventory Management System
+          Prism
         </Typography>
         <Typography variant="body1" paragraph>
-          Manage your inventory items efficiently with our comprehensive system
+          Modern Inventory Solution
         </Typography>
         <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
           <Button
