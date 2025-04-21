@@ -13,7 +13,6 @@ import {
   Divider
 } from '@mui/material';
 import {
-  Add as AddIcon,
   AccountCircle as AccountCircleIcon,
   Inventory as InventoryIcon
 } from '@mui/icons-material';
@@ -70,15 +69,6 @@ function Navbar() {
             startIcon={<InventoryIcon />}
           >
             Inventory
-          </Button>
-          
-          <Button
-            color="inherit"
-            component={RouterLink}
-            to="/add-item"
-            startIcon={<AddIcon />}
-          >
-            Add Item
           </Button>
 
           {/* User Menu */}

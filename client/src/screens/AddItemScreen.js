@@ -24,12 +24,11 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import InventoryService from '../services/InventoryService';
 import CategoryService from '../services/CategoryService';
-import { useAuth } from '../context/AuthContext';
+import LocationSelect from '../components/LocationSelect';
 
 function AddItemScreen() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
   
   const [item, setItem] = useState({
     name: '',
@@ -323,12 +322,9 @@ function AddItemScreen() {
             </Grid>
 
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Location"
-                name="location"
+              <LocationSelect
                 value={item.location}
-                onChange={handleChange}
+                onChange={(value) => setItem(prev => ({ ...prev, location: value }))}
               />
             </Grid>
 

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Category = require('../models/Category');
+const Category = require('../src/models/Category');
 
 const DEFAULT_CATEGORIES = [
   'Electronic',

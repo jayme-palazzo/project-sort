@@ -2,10 +2,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const authRoutes = require('./routes/authRoutes');
-const categoryRoutes = require('./routes/categoryRoutes');
-const inventoryRoutes = require('./routes/inventoryRoutes');
+const authRoutes = require('./src/routes/authRoutes');
+const categoryRoutes = require('./src/routes/categoryRoutes');
+const inventoryRoutes = require('./src/routes/inventoryRoutes');
+const locationRoutes = require('./src/routes/locations');
 const initDefaultCategories = require('./scripts/initDefaultCategories');
+const initDefaultLocation = require('./scripts/initDefaultLocation');
 
 // Load environment variables
 dotenv.config();
@@ -21,8 +23,11 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/inventory
   .then(async () => {
     console.log('Connected to MongoDB');
     try {
-      // Initialize default categories after successful connection
-      await initDefaultCategories();
+      // Initialize default categories and location after successful connection
+      await Promise.all([
+        initDefaultCategories(),
+        initDefaultLocation()
+      ]);
     } catch (error) {
       console.error('Error during initialization:', error);
     }
@@ -33,6 +38,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/inventory
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use('/api/locations', locationRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
